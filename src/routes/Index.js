@@ -16,14 +16,11 @@ import JogoPalavras from "../pages/JogoPalavras";
 import QuebraCabeca from "../pages/QuebraCabeca";
 import JogoDoClick from "../pages/JogoDoClick";
 import ChatScreen from "../pages/Chat";
-import OnboardingScreen from "../pages/Onbording";
 import Sound from "../pages/soundtest";
 import MeuPerfil from "../pages/MeuPerfil";
 import OnboardingV2 from "../pages/OnBoardingV2";
-import CatalogoV2 from "../pages/CatalogoV2";
 import TesteDeVide from "../pages/VídeoTest.Js";
 import TestComponent from "../pages/TestComponent";
-import JogodaForca from "../pages/Jogodaforca";
 import BLurTest from "../pages/blurtest";
 
 const Drawer = createDrawerNavigator();
@@ -67,11 +64,6 @@ export default function Index() {
         drawerContent={props => <CustomDrawerContent {...props} />}
       >
         <Drawer.Screen 
-          name="OnBoarding" 
-          component={OnboardingScreen} 
-          options={{ headerShown: false }} 
-        />
-                <Drawer.Screen 
           name="BlurTest" 
           component={BLurTest} 
           options={{ headerShown: false }} 
@@ -111,12 +103,7 @@ export default function Index() {
           component={Cadastro} 
           options={{ headerShown: false }} 
         />
-        <Drawer.Screen 
-          name="CatalogoV2" 
-          component={CatalogoV2} 
-          options={{ headerShown: false }} 
-        />
-        <Drawer.Screen 
+                <Drawer.Screen 
           name="CampoMinado" 
           component={CampoMinado} 
           options={{ headerShown: false }} 

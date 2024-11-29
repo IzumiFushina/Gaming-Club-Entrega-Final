@@ -44,7 +44,7 @@ function Index({ navigation }) {
     };
 
     const images = [image1, image2, image3];
-    const games = [
+    const allGames = [
         { id: 1, name: 'Campo Minado', route: 'CampoMinado', image: gameImage1 },
         { id: 2, name: 'Jogo da Velha', route: 'JogodaVelha', image: gameImage2 },
         { id: 3, name: 'Jogo do click', route: 'JogoDoClick', image: gameImage3 },
@@ -54,6 +54,16 @@ function Index({ navigation }) {
         { id: 7, name: 'Quiz', route: 'Quiz', image: gameImage6 },
         { id: 8, name: 'Jogo de Matemática', route: 'JogoMat', image: gameImage7 },
     ];
+
+    // Jogos que queremos exibir na última coluna
+    const recentGames = allGames.filter(game => 
+        ['Jogo da Velha', 'Jogo da Memória', 'Quebra-cabeça', 'Quiz', 'Jogo de Matemática'].includes(game.name)
+    );
+
+    // Jogos que queremos exibir na nova coluna (Campo Minado, Jogo do Click, Jogo dos Números)
+    const lastColumnGames = allGames.filter(game => 
+        ['Campo Minado', 'Jogo do click', 'Jogo dos Números'].includes(game.name)
+    );
 
     const openGame = (route) => {
         navigation.navigate(route);
@@ -70,7 +80,6 @@ function Index({ navigation }) {
 
     // Função para rolar até a "Segunda Coluna de Jogos"
     const scrollToSecondColumn = () => {
-        // Encontre o índice da "Segunda Coluna de Jogos" e role até ele
         scrollViewRef.current.scrollTo({ x: 0, y: 1000, animated: true }); // Ajuste o valor de "y" conforme necessário
     };
 
@@ -122,7 +131,7 @@ function Index({ navigation }) {
                 </View>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-                    {games.map((game) => (
+                    {allGames.map((game) => (
                         <View key={game.id} style={styles.gameContainer}>
                             <TouchableOpacity
                                 style={styles.square}
@@ -135,71 +144,76 @@ function Index({ navigation }) {
                     ))}
                 </ScrollView>
 
-                {/* Títulos e quadrados organizados por coluna */}
-                <Text style={styles.popularGamesText}>Jogos de Números</Text>
+                {/* Título da última coluna de jogos */}
+                <View style={styles.columnTitleContainer}>
+                    <Text style={styles.popularGamesText}>Jogos Populares</Text>
+                </View>
+                
+                {/* Quadrados organizados na última coluna */}
                 <View style={styles.squareGrid}>
-                    {[...Array(6)].map((_, index) => ( // Agora com 6 quadrados
-                        <View key={index} style={styles.squareContainer}>
+                    {recentGames.map((game) => (
+                        <View key={game.id} style={styles.squareContainer}>
                             <TouchableOpacity
-                                style={[styles.clickableSquare, (index % 2 === 0 || index === 1) && styles.blackSquare]}
-                                onPress={() => handleSquarePress(index + 1)}
+                                style={styles.square}
+                                onPress={() => openGame(game.route)}
                             >
-                                {index === 0 ? (
-                                    <Image source={gameImage1} style={styles.squareImage} />
-                                ) : index === 1 ? (
-                                    <Image source={gameImage2} style={styles.squareImage} />
-                                ) : index === 2 ? (
-                                    <Image source={gameImage3} style={styles.squareImage} />
-                                ) : index === 3 ? (
-                                    <Image source={gameImage4} style={styles.squareImage} />
-                                ) : index === 4 ? (
-                                    <Image source={gameImage5} style={styles.squareImage} />
-                                ) : index === 5 ? (
-                                    <Image source={gameImage6} style={styles.squareImage} />
-                                ) : (
-                                    <Text style={styles.squareText}>{`Quadrado ${index + 1}`}</Text>
-                                )}
+                                <Image source={game.image} style={styles.squareImage} />
                             </TouchableOpacity>
+                            <Text style={styles.captionText}>{game.name}</Text>
                         </View>
                     ))}
                 </View>
- {/* Títulos e quadrados organizados por coluna */}
- 
-                <Text style={styles.popularGamesText}>Segunda Coluna de Jogos</Text>
-                <View style={styles.squareGrid}>
-                    {[...Array(6)].map((_, index) => ( // Nova linha com mais 6 quadrados
-                        <View key={index + 6} style={styles.squareContainer}>
+
+                {/* Título para a última coluna de jogos */}
+                <View style={styles.lastColumnTitleContainer}>
+                    <Text style={styles.recentGamesText}>Jogos para Pensar</Text>
+                </View>
+
+                {/* Nova ScrollView na parte inferior */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 30 }}>
+                    {recentGames.map((game) => (
+                        <View key={game.id} style={styles.gameContainer}>
                             <TouchableOpacity
-                                style={[styles.clickableSquare, (index % 2 === 0 || index === 1) && styles.blackSquare]}
-                                onPress={() => handleSquarePress(index + 7)} // Ajuste para evitar conflito de IDs
+                                style={styles.square}
+                                onPress={() => openGame(game.route)}
                             >
-                                {index === 0 ? (
-                                    <Image source={gameImage7} style={styles.squareImage} />
-                                ) : index === 1 ? (
-                                    <Image source={gameImage1} style={styles.squareImage} />
-                                ) : index === 2 ? (
-                                    <Image source={gameImage6} style={styles.squareImage} />
-                                ) : index === 3 ? (
-                                    <Image source={gameImage4} style={styles.squareImage} />
-                                ) : index === 4 ? (
-                                    <Image source={gameImage5} style={styles.squareImage} />
-                                ) : index === 5 ? (
-                                    <Image source={gameImage6} style={styles.squareImage} />
-                                ) : (
-                                    
-                            
-                                    
-                                    
-                                    <Text style={styles.squareText}>{`Quadrado ${index + 7}`}</Text>
-                                )}
+                                <Image source={game.image} style={styles.squareImage} />
                             </TouchableOpacity>
+                            <Text style={styles.captionText}>{game.name}</Text>
                         </View>
                     ))}
+                </ScrollView>
+
+                {/* Adicionando o anúncio 1 entre as seções Jogos para Pensar e Mais desafiadores */}
+                <View style={styles.adContainer}>
+                    <Image source={image1} style={styles.adImage} />
                 </View>
+
+              
+
+                {/* Nova coluna idêntica à de "Mais desafiadores" */}
+                <View style={styles.thirdColumnTitleContainer}>
+                    <Text style={styles.recentGamesText}>Mais Desafiadores</Text>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 30 }}>
+                    {lastColumnGames.map((game) => (
+                        <View key={game.id} style={styles.gameContainer}>
+                            <TouchableOpacity
+                                style={styles.square}
+                                onPress={() => openGame(game.route)}
+                            >
+                                <Image source={game.image} style={styles.squareImage} />
+                            </TouchableOpacity>
+                            <Text style={styles.captionText}>{game.name}</Text>
+                        </View>
+                    ))}
+                </ScrollView>
             </ScrollView>
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -211,23 +225,21 @@ const styles = StyleSheet.create({
         paddingTop: 50,
     },
     welcomeText: {
-        color: '#00ffff', 
         fontSize: 30,
-        fontWeight: 'bold',
-        marginBottom: 5,
+        color: '#00ffff',
         textAlign: 'center',
-        textShadowColor: '#00e5e5', // Cor do brilho
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 5, // Intensidade do brilho
+        fontWeight: 'bold',
+        marginBottom: 20,
         fontFamily: 'Font5',
     },
     carouselItem: {
+        width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
     },
     carouselImage: {
-        width: '95%',
-        height: '95%',
+        width: '100%',
+        height: '100%',
         borderRadius: 10,
     },
     titleContainer: {
@@ -236,12 +248,13 @@ const styles = StyleSheet.create({
     allGamesText: {
         fontSize: 25,
         fontWeight: 'bold',
-        color: '#00ffff',  // Neon rosa
+        color: '#00ffff',
         marginBottom: 5,
         textAlign: 'center',
-        textShadowColor: '#00e5e5', // Cor do brilho
+        textShadowColor: '#00e5e5',
         textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 3, // Intensidade do brilho
+        textShadowRadius: 3,
+        fontFamily: 'Font5',
     },
     buttonsContainer: {
         flexDirection: 'row',
@@ -279,20 +292,36 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     captionText: {
-        color: '#F89BDD',  // Neon rosa
+        color: '#F89BDD',
         marginTop: 10,
     },
-   popularGamesText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#F89BDD',  // Neon rosa
-    marginTop: 20,
-    marginBottom: 10,
-    textAlign: 'center',
-    textShadowColor: '#E07BDA', // Cor do brilho
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10, // Intensidade do brilho
-},
+    popularGamesText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#00ffff',
+        marginTop: 20,
+        marginBottom: 10,
+        textAlign: 'center',
+        textShadowColor: '#00e5e5',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 5,
+        fontFamily: 'Font5',
+    },
+    recentGamesText: {
+        fontFamily: 'Font5',
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#00ffff',
+        marginBottom: 10,
+        textAlign: 'center',
+        textShadowColor: '#00e5e5',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 5,
+    },
+    secondColumnTitleContainer: {
+        marginTop: 30,
+        alignItems: 'center',
+    },
     squareGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -309,12 +338,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 5,
     },
-    blackSquare: {
-        backgroundColor: 'black',
-    },
-    squareText: {
-        color: 'white',
-    },
     footer: {
         position: 'absolute',
         bottom: 0,
@@ -328,19 +351,28 @@ const styles = StyleSheet.create({
     footerButton: {
         alignItems: 'center',
     },
+    adContainer: {
+        marginVertical: 20,
+        alignItems: 'center',
+    },
+    adImage: {
+        width: '90%',  // Ajuste conforme necessário
+        height: 200,   // Ajuste conforme necessário
+        borderRadius: 10,
+    },
+    
     iconContainer: {
         justifyContent: 'center',
         alignItems: 'center',
     },
     backgroundImage: {
         ...StyleSheet.absoluteFillObject,
-        opacity: 1, // Diminua a opacidade para um valor mais baixo
+        opacity: 1,
     },
     absolute: {
         ...StyleSheet.absoluteFillObject,
-        opacity: 0.7, // Ajuste a opacidade do blur para um valor maior
+        opacity: 0.7,
     },
 });
-
 
 export default Index;

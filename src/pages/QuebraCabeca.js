@@ -81,6 +81,9 @@ const App = () => {
       source={require('../images/BackgroundQuebraCabeça.png')}
       style={styles.background}
     >
+      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('Catalogo')}>
+          <Icon name="close" size={30} color="#BA52AD" />
+      </TouchableOpacity>
       <View style={styles.overlay}>
         <Text style={styles.title}>Quebra-Cabeça de 15</Text>
         <Text style={styles.stats}>Movimentos: {moves}</Text>
@@ -126,6 +129,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 70,
+    right: 20,
+    zIndex: 1,
   },
   overlay: {
     flex: 1,

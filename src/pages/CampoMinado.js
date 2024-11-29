@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated, ImageBackgro
 import { Audio } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons'; // Importando ícones
+import { useNavigation } from '@react-navigation/native'; // Importando o hook de navegação
 
 const BOARD_SIZE = 8;
 const MINES_COUNT = 10;
@@ -17,7 +18,7 @@ const INTERVAL = 30;
 let timeout;
 
 const generateBoard = () => {
-  const board = Array.from({ length: BOARD_SIZE }, () => 
+  const board = Array.from({ length: BOARD_SIZE }, () =>
     Array.from({ length: BOARD_SIZE }, () => ({
       isRevealed: false,
       isMine: false,
@@ -65,6 +66,7 @@ const countNeighboringMines = (board, row, col) => {
 };
 
 const App = () => {
+  const navigation = useNavigation(); // Inicializando o hook de navegação
   const [board, setBoard] = useState(generateBoard());
   const [gameOver, setGameOver] = useState(false);
   const [gameWon, setGameWon] = useState(false);
@@ -91,7 +93,7 @@ const App = () => {
   }, []);
 
   const infiniteRainbow = () => {
-    const updatedLocations = gradientOptions.locations.map((loc, index) => 
+    const updatedLocations = gradientOptions.locations.map((loc, index) =>
       index === gradientOptions.locations.length - 1 ? 1 : Math.max(0, loc - MOVEMENT).toFixed(2)
     );
 
@@ -99,7 +101,7 @@ const App = () => {
       ...prev,
       locations: updatedLocations,
     }));
-    
+   
     timeout = setTimeout(infiniteRainbow, INTERVAL);
   };
 
@@ -210,15 +212,19 @@ const App = () => {
       >
         <Text style={styles.squareText}>{content}</Text>
       </TouchableOpacity>
-      
     );
   };
 
   return (
-    <ImageBackground 
+    <ImageBackground
       source={require('../images/fundo5.png')} // Certifique-se de que o caminho da imagem está correto
       style={styles.background}
     >
+      {/* Botão de fechar que navega para a tela Catalogo */}
+      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('Catalogo')}>
+        <Icon name="close" size={30} color="#BA52AD" />
+      </TouchableOpacity>
+
       <Animated.View style={styles.container}>
         <Text style={{fontFamily: 'Font5', fontSize: 40, color: "#BA52AD", marginBottom: 30, }}>Campo Minado</Text>
         <View style={styles.board}>
@@ -238,8 +244,6 @@ const App = () => {
         </View>
       </Animated.View>
     </ImageBackground>
-    
-    
   );
 };
 
@@ -248,6 +252,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    zIndex: 1,
   },
   container: {
     flex: 1,

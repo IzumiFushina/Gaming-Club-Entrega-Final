@@ -1,173 +1,193 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, ImageBackground, Image, Animated } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  ImageBackground,
+  Image,
+  Animated,
+} from 'react-native';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import Icon from 'react-native-vector-icons/Ionicons'; // Importando ícones
+import { useNavigation } from '@react-navigation/native'; // Importando o hook de navegação
 
 const ClickFrenzy = () => {
+  const navigation = useNavigation(); // Inicializando o hook de navegação
   const [clicks, setClicks] = useState(0);
   const [remainingTime, setRemainingTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [showScoreModal, setShowScoreModal] = useState(false);
-  const [showStartModal, setShowStartModal] = useState(true);
   const [scores, setScores] = useState([]);
-  
+  const [modals, setModals] = useState({
+    start: true,
+    result: false,
+    score: false,
+  });
+
   // Animação do ícone
   const animationValue = useState(new Animated.Value(0))[0];
 
-  const GG_ALL_GAME_CONFIG = {
-    gameDuration: 10,
-    startText: "Começar",
-    clickText: "Click!",
-    resultText: "Você clicou {clicks} vezes em 10 segundos!",
-    resetText: "Reiniciar"
+  const GAME_CONFIG = {
+    duration: 10,
+    messages: {
+      start: "Vamos Jogar!",
+      click: "Click!",
+      result: (clicks) => `Você clicou ${clicks} vezes em ${GAME_CONFIG.duration} segundos!`,
+      reset: "Reiniciar",
+    },
   };
 
+  // Gerencia o temporizador
   useEffect(() => {
-    let timer;
-    if (isPlaying && remainingTime > 0) {
-      timer = setInterval(() => {
-        setRemainingTime((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (remainingTime === 0 && isPlaying) {
-      clearInterval(timer);
-      setIsPlaying(false);
-      setIsDisabled(true);
-      setScores((prevScores) => {
-        const updatedScores = [...prevScores, clicks];
-        return updatedScores.length > 5 ? updatedScores.slice(-5) : updatedScores;
+    if (!isPlaying || remainingTime === 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime === 1) {
+          endGame();
+          clearInterval(timer);
+        }
+        return prevTime - 1;
       });
-      setShowResultModal(true);
-    }
+    }, 1000);
+
     return () => clearInterval(timer);
   }, [isPlaying, remainingTime]);
 
+  // Configura a animação
   useEffect(() => {
-    // Função para animar o ícone
-    const startAnimation = () => {
-      animationValue.setValue(0);
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(animationValue, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(animationValue, {
-            toValue: 0,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    };
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(animationValue, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animationValue, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
 
-    startAnimation();
-
-    return () => animationValue.stop();
+    return () => loop.stop();
   }, []);
 
   const startGame = () => {
     setClicks(0);
-    setRemainingTime(GG_ALL_GAME_CONFIG.gameDuration);
+    setRemainingTime(GAME_CONFIG.duration);
     setIsPlaying(true);
-    setIsDisabled(false);
+    setModals((prev) => ({ ...prev, start: false, result: false }));
   };
 
-  const handleClick = () => {
-    if (!isPlaying) {
-      startGame();
-    } else {
-      setClicks((prevClicks) => prevClicks + 1);
-    }
+  const endGame = () => {
+    setIsPlaying(false);
+    setScores((prevScores) => [...prevScores.slice(-4), clicks]);
+    setModals((prev) => ({ ...prev, result: true }));
   };
 
   const resetGame = () => {
     setClicks(0);
-    setRemainingTime(GG_ALL_GAME_CONFIG.gameDuration);
+    setRemainingTime(0);
     setIsPlaying(false);
-    setIsDisabled(false);
-    setShowResultModal(false);
+    setModals((prev) => ({ ...prev, result: false }));
   };
 
-  const openScoreModal = () => {
-    setShowScoreModal(true);
-  };
-
-  // Animação do ícone
   const iconScale = animationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.2], // Muda o tamanho do ícone
+    outputRange: [1, 1.2],
   });
 
   return (
-    <ImageBackground source={require('../images/imagemfundo2.png')} style={styles.backgroundImage}>
+    <ImageBackground
+      source={require('../images/imagemfundo2.png')}
+      style={styles.background}
+    >
+      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('Catalogo')}>
+        <Icon name="close" size={30} color="#BA52AD" />
+      </TouchableOpacity>
       <View style={styles.container}>
-        {/* Mensagem acima do ícone */}
-        
-        <TouchableOpacity style={styles.scoreButton} onPress={openScoreModal}>
-          <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => setModals((prev) => ({ ...prev, score: true }))}
+        >
+          <Animated.View style={{ transform: [{ scale: iconScale }], marginTop: 180 }}>
             <SimpleLineIcons name="trophy" size={24} color="yellow" />
           </Animated.View>
         </TouchableOpacity>
 
-        <Text style={styles.title}>Jogo Click</Text>
-        <Text style={{ color: 'white' }}>Clique o máximo que conseguir em 10 segundos!</Text>
+        <Text style={styles.title}>Click Frenzy</Text>
+        <Text style={styles.subtitle}>Clique o máximo que conseguir em 10 segundos!</Text>
 
-        {/* Modal de início */}
-        <Modal visible={showStartModal} transparent animationType="slide">
+        <TouchableOpacity
+          style={[styles.clickButton, isPlaying && styles.activeClickButton]}
+          onPress={() => isPlaying && setClicks((prev) => prev + 1)}
+          disabled={!isPlaying}
+        >
+          <Text style={styles.clickText}>
+            {isPlaying ? GAME_CONFIG.messages.click : GAME_CONFIG.messages.start}
+          </Text>
+        </TouchableOpacity>
+
+        {isPlaying && <Text style={styles.timer}>Tempo: {remainingTime}s</Text>}
+
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={resetGame}
+          disabled={isPlaying}
+        >
+          <Text style={styles.resetText}>{GAME_CONFIG.messages.reset}</Text>
+        </TouchableOpacity>
+
+        {/* Modais */}
+        <Modal visible={modals.start} transparent animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Vamos Jogar!</Text>
-              <Text style={styles.motivationalText}>Prepare-se para desafiar seus reflexos!</Text>
-              <Text style={styles.motivationalText}>Clique o máximo que conseguir em 10 segundos!</Text>
-              <TouchableOpacity onPress={() => setShowStartModal(false)} style={styles.startButton}>
+              <Text style={styles.modalTitle}>{GAME_CONFIG.messages.start}</Text>
+              <TouchableOpacity style={styles.startButton} onPress={startGame}>
                 <Text style={styles.startButtonText}>Jogar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        <TouchableOpacity
-          style={[
-            styles.clickArea,
-            remainingTime === 0 ? { backgroundColor: 'purple' } : {}
-          ]}
-          onPress={handleClick}
-          disabled={remainingTime === 0}
-        >
-          <Text style={styles.buttonText}>
-            {isPlaying ? GG_ALL_GAME_CONFIG.clickText : GG_ALL_GAME_CONFIG.startText}
-          </Text>
-        </TouchableOpacity>
-
-        {isPlaying && <Text style={styles.timer}>Time: {remainingTime}s</Text>}
-
-        <TouchableOpacity style={styles.resetButton} onPress={resetGame} disabled={isPlaying}>
-          <Text style={styles.resetButtonText}>{GG_ALL_GAME_CONFIG.resetText}</Text>
-        </TouchableOpacity>
-
-        <Modal visible={showResultModal} transparent animationType="slide">
+        <Modal visible={modals.result} transparent animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Image source={require('../images/medalha.png')} style={styles.medalImage} />
-              <Text style={styles.result}>{GG_ALL_GAME_CONFIG.resultText.replace('{clicks}', clicks)}</Text>
-              <TouchableOpacity onPress={resetGame} style={styles.playAgainButton}>
-                <Text style={styles.playAgainButtonText}>Jogar novamente</Text>
+              <Image
+                source={require('../images/medalha.png')}
+                style={styles.medal}
+              />
+              <Text style={styles.resultText}>{GAME_CONFIG.messages.result(clicks)}</Text>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={resetGame}
+              >
+                <Text style={styles.startButtonText}>Jogar Novamente</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        <Modal visible={showScoreModal} transparent animationType="slide">
+        <Modal visible={modals.score} transparent animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Últimas pontuações</Text>
+              <Text style={styles.modalTitle}>Últimas Pontuações</Text>
               {scores.map((score, index) => (
-                <Text key={index} style={styles.scoreText}>{score} clicks</Text>
+                <Text key={index} style={styles.scoreText}>
+                  {score} cliques
+                </Text>
               ))}
-              <TouchableOpacity onPress={() => setShowScoreModal(false)} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>Fechar</Text>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={() =>
+                  setModals((prev) => ({ ...prev, score: false }))
+                }
+              >
+                <Text style={styles.startButtonText}>Fechar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -178,10 +198,15 @@ const ClickFrenzy = () => {
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  background: {
     flex: 1,
     resizeMode: 'cover',
-    justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 70,
+    right: 20,
+    zIndex: 1,
   },
   container: {
     flex: 1,
@@ -191,123 +216,88 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    color: 'white',
+    marginBottom: 10,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: 'white',
-    fontFamily: 'Font5',
-    textAlign: 'center',
   },
-  attentionText: {
-    color: 'white',
+  subtitle: {
     fontSize: 16,
-    marginBottom: 10,
-    textAlign: 'center',
+    color: 'white',
+    marginBottom: 20,
   },
-  clickArea: {
+  clickButton: {
     width: 200,
     height: 200,
     backgroundColor: 'purple',
-    elevation: 20,
-    shadowColor: 'white/',
-    shadowOffset: { width: 100, height: 100 },
-    shadowRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
-    marginTop: 20,
+    marginBottom: 20,
   },
-  buttonText: {
+  activeClickButton: {
+    backgroundColor: 'green',
+  },
+  clickText: {
     color: 'white',
     fontSize: 24,
   },
   timer: {
-    fontSize: 24,
-    marginTop: 20,
     color: 'white',
+    fontSize: 18,
+    marginBottom: 20,
   },
   resetButton: {
-    marginTop: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
     backgroundColor: 'red',
+    padding: 10,
     borderRadius: 5,
   },
-  resetButtonText: {
+  resetText: {
     color: 'white',
     fontSize: 18,
   },
-  scoreButton: {
-    padding: 12,
-    borderRadius: 8,
-    marginLeft: 300,
-    alignItems: 'center',
-    justifyContent: 'center',
+  iconButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   modalContent: {
-    width: 320,
-    padding: 50,
+    width: 300,
+    padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  motivationalText: {
-    textAlign: 'center',
     marginBottom: 20,
-    fontSize: 20,
   },
-  startButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#BA52AD',
-    borderRadius: 5,
-  },
-  startButtonText: {
-    color: 'white',
+  resultText: {
     fontSize: 18,
-  },
-  result: {
-    fontSize: 18,
-    marginBottom: 10,
+    marginBottom: 20,
     textAlign: 'center',
   },
-  playAgainButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: 'purple',
-    borderRadius: 5,
-  },
-  playAgainButtonText: {
-    color: 'white',
-    fontSize: 18,
-  },
-  medalImage: {
+  medal: {
     width: 100,
     height: 100,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   scoreText: {
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
   },
-  closeButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#BA52AD',
+  startButton: {
+    backgroundColor: 'purple',
+    padding: 10,
     borderRadius: 5,
   },
-  closeButtonText: {
+  startButtonText: {
     color: 'white',
     fontSize: 18,
   },

@@ -8,24 +8,31 @@ import {
   Modal,
   TextInput,
   Alert,
+  ImageBackground,
 } from "react-native";
-import { signOut } from "firebase/auth"; // Importação do signOut
-import { auth } from "../config/firebaseConfig"; // Configuração do Firebase
-import * as ImagePicker from 'expo-image-picker';
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebaseConfig";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function MeuPerfil() {
   const [username, setUsername] = useState("Jogador");
   const [password, setPassword] = useState("******");
-  const [profileImage, setProfileImage] = useState("https://via.placeholder.com/100");
+  const [profileImage, setProfileImage] = useState(
+    "https://via.placeholder.com/100"
+  );
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState(null); // Identifica se estamos editando o nome ou a senha
+  const [modalType, setModalType] = useState(null);
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar a galeria de fotos!');
+      if (status !== "granted") {
+        Alert.alert(
+          "Permissão necessária",
+          "Precisamos de permissão para acessar a galeria de fotos!"
+        );
       }
     })();
   }, []);
@@ -42,7 +49,7 @@ export default function MeuPerfil() {
         setProfileImage(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('Erro', 'Houve um problema ao tentar acessar a galeria.');
+      Alert.alert("Erro", "Houve um problema ao tentar acessar a galeria.");
     }
   };
 
@@ -72,7 +79,7 @@ export default function MeuPerfil() {
           text: "Sim",
           onPress: async () => {
             try {
-              await signOut(auth); // Função para deslogar do Firebase
+              await signOut(auth);
               Alert.alert("Você saiu com sucesso!");
             } catch (error) {
               Alert.alert("Erro ao sair", error.message);
@@ -85,32 +92,44 @@ export default function MeuPerfil() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Top Header */}
-      <View style={styles.profileCard}>
-        {/* Foto de perfil */}
+    <ImageBackground
+      source={require('../images/imagemfundo4.png')}
+      style={styles.container}
+    >
+      {/* Header */}
+      <View style={styles.header}>
         <TouchableOpacity onPress={pickImage}>
           <Image style={styles.avatar} source={{ uri: profileImage }} />
         </TouchableOpacity>
         <Text style={styles.username}>{username}</Text>
-        <Text style={styles.location}>Brasil</Text>
+        <Text style={styles.location}>
+          <Ionicons name="location-outline" size={16} color="#fff" /> Brasil
+        </Text>
       </View>
 
-      {/* Textos clicáveis para alterar nome ou senha */}
+      {/* Edit Options */}
       <View style={styles.editContainer}>
-        <TouchableOpacity onPress={() => openModal("username")}>
-          <Text style={styles.editableText}>Nome: {username}</Text>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => openModal("username")}
+        >
+          <Ionicons name="person-outline" size={18} color="#6a1b9a" />
+          <Text style={styles.editText}>Alterar Nome</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => openModal("password")}>
-          <Text style={styles.editableText}>Senha: {password}</Text>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => openModal("password")}
+        >
+          <Ionicons name="lock-closed-outline" size={18} color="#6a1b9a" />
+          <Text style={styles.editText}>Alterar Senha</Text>
         </TouchableOpacity>
-        {/* Botão de sair */}
-        <TouchableOpacity onPress={handleLogout}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="exit-outline" size={18} color="#fff" />
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Modal para editar nome ou senha */}
+      {/* Modal */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -145,53 +164,66 @@ export default function MeuPerfil() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 20,
   },
-  profileCard: {
+  header: {
+    backgroundColor: "#6a1b9a",
+    paddingVertical: 60,
     alignItems: "center",
-    marginVertical: 20,
-    marginTop: 50, // Margin from top of the screen
   },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    borderWidth: 2,
-    borderColor: "#6a1b9a",
+    borderWidth: 3,
+    borderColor: "#fff",
   },
   username: {
-    fontSize: 20,
+    color: "#fff",
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
     marginTop: 10,
   },
   location: {
+    color: "#ddd",
     fontSize: 14,
-    color: "#666",
+    marginTop: 5,
   },
   editContainer: {
     marginTop: 20,
-    alignItems: "center",
+    paddingHorizontal: 20,
   },
-  editableText: {
+  editButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  editText: {
     fontSize: 16,
     color: "#6a1b9a",
-    marginBottom: 10,
-    textDecorationLine: "underline",
+    marginLeft: 10,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    backgroundColor: "red",
+    borderRadius: 5,
+    justifyContent: "center",
+    marginTop: 20,
   },
   logoutText: {
+    color: "#fff",
     fontSize: 16,
-    color: "red",
-    marginTop: 20,
-    textDecorationLine: "underline",
+    marginLeft: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -213,7 +245,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "#f5f5f5",
     padding: 10,
     borderRadius: 5,
     borderWidth: 1,
